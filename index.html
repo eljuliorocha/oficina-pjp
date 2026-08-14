@@ -1,0 +1,1374 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oficina Mecânica - Sistema de Gestão</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #1557b0;
+    --success: #188038;
+    --danger: #d93025;
+    --warning: #f9ab00;
+    --bg: #f1f3f4;
+    --card: #ffffff;
+    --text: #202124;
+    --muted: #5f6368;
+    --border: #dadce0;
+    --sidebar: #1f2937;
+    --sidebar-hover: #374151;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .hidden { display: none !important; }
+
+  /* ================= LOGIN ================= */
+  #view-login {
+    background: linear-gradient(135deg, #1f2937 0%, #1a73e8 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 400px;
+    padding: 32px 30px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.3);
+  }
+  .login-card .logo { text-align: center; font-size: 40px; margin-bottom: 6px; }
+  .login-card h1 { font-size: 22px; text-align: center; }
+  .login-card .sub { text-align: center; color: var(--muted); font-size: 14px; margin: 4px 0 22px; }
+  .tabs { display: flex; background: #eef1f4; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+  .tab {
+    flex: 1; text-align: center; padding: 9px 0; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-weight: 600; color: var(--muted);
+    transition: background .2s, color .2s;
+  }
+  .tab.active { background: var(--primary); color: #fff; }
+  .login-card label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 4px; color: var(--muted); }
+  .login-card input {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+  }
+  .login-card input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,.2); }
+  .login-card button {
+    width: 100%; margin-top: 22px; background: var(--primary); color: #fff;
+    border: none; padding: 12px; border-radius: 8px; font-size: 15px;
+    font-weight: 600; cursor: pointer; transition: background .2s;
+  }
+  .login-card button:hover { background: var(--primary-dark); }
+  .cred {
+    margin-top: 22px; background: #f8f9fa; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; font-size: 13px; color: var(--muted); line-height: 1.8;
+  }
+  .cred b { color: var(--text); }
+  .login-card .btn-register {
+    width: 100%; margin-top: 14px; background: #fff; color: var(--primary);
+    border: 1px solid var(--primary); border-radius: 8px; padding: 11px;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s;
+  }
+  .login-card .btn-register:hover { background: rgba(26,115,232,.08); }
+
+  /* ================= APP (mecânico) ================= */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 230px;
+    background: var(--sidebar);
+    color: #fff;
+    padding-top: 20px;
+    flex-shrink: 0;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+  .sidebar .logo {
+    padding: 0 20px 20px;
+    font-size: 20px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--sidebar-hover);
+  }
+  .sidebar nav { margin-top: 10px; }
+  .sidebar nav a {
+    display: flex; align-items: center; gap: 12px; padding: 13px 20px;
+    color: #d1d5db; text-decoration: none; font-size: 15px; cursor: pointer;
+    transition: background .2s;
+  }
+  .sidebar nav a:hover { background: var(--sidebar-hover); color: #fff; }
+  .sidebar nav a.active { background: var(--primary); color: #fff; }
+  .main { flex: 1; padding: 24px 28px; overflow-x: hidden; }
+  .page { display: none; }
+  .page.active { display: block; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 20px; }
+  .topbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .topbar .who { color: var(--muted); font-size: 14px; margin-right: auto; }
+
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border-radius: 10px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .stat-card .label { color: var(--muted); font-size: 13px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-card .value.green { color: var(--success); }
+  .stat-card .value.red { color: var(--danger); }
+  .stat-card .value.orange { color: var(--warning); }
+  .stat-card .value.blue { color: var(--primary); }
+
+  .panel { background: var(--card); border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.12); margin-bottom: 20px; }
+  .panel h2 { font-size: 18px; margin-bottom: 14px; }
+
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .toolbar .spacer { flex: 1; }
+
+  .btn {
+    background: var(--primary); color: #fff; border: none; padding: 10px 18px;
+    border-radius: 8px; font-size: 14px; cursor: pointer; transition: background .2s;
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn-outline {
+    background: transparent; color: var(--primary); border: 1px solid var(--primary);
+    padding: 9px 16px; border-radius: 8px; font-size: 14px; cursor: pointer;
+  }
+  .btn-outline:hover { background: rgba(26,115,232,.08); }
+  .btn-danger { background: var(--danger); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .btn-danger:hover { opacity: .85; }
+  .btn-success { background: var(--success); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: #fff; color: var(--text);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,.2); }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 4px; color: var(--muted); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { background: #f8f9fa; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .4px; }
+  tr:hover td { background: #f8f9fa; }
+  .empty { text-align: center; color: var(--muted); padding: 30px; font-size: 15px; }
+
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge.open { background: #fef7e0; color: #b06000; }
+  .badge.in_progress { background: #e8f0fe; color: var(--primary-dark); }
+  .badge.done { background: #e6f4ea; color: var(--success); }
+  .badge.cancelled { background: #fce8e6; color: var(--danger); }
+  .badge.cash { background: #f3e8fd; color: #7627bb; }
+  .badge.card { background: #e6f4ea; color: var(--success); }
+  .badge.pix { background: #e8f0fe; color: var(--primary-dark); }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    z-index: 100; align-items: flex-start; justify-content: center;
+    overflow-y: auto; padding: 30px 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; width: 100%; max-width: 560px;
+    padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,.25);
+  }
+  .modal h3 { font-size: 20px; margin-bottom: 6px; }
+  .modal .close { float: right; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal .close:hover { color: var(--text); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; background: #323232; color: #fff;
+    padding: 14px 22px; border-radius: 8px; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3); opacity: 0; pointer-events: none;
+    transition: opacity .3s; z-index: 200; max-width: 80%;
+  }
+  #toast.show { opacity: 1; }
+
+  .search-box { max-width: 320px; }
+
+  /* ================= CLIENTE ================= */
+  header.cliente {
+    background: linear-gradient(135deg, #1f2937 0%, #1a73e8 100%);
+    color: #fff; padding: 22px 28px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  header.cliente h1 { font-size: 22px; }
+  header.cliente .user { font-size: 14px; opacity: .9; }
+  .cliente-main { max-width: 900px; margin: 24px auto; padding: 0 20px; }
+  .cliente-main h2 { font-size: 18px; margin-bottom: 14px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .vcard { background: var(--card); border-radius: 10px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.12); border-top: 4px solid var(--primary); }
+  .vcard .plate { font-size: 22px; font-weight: 700; color: var(--primary); letter-spacing: 1px; }
+  .vcard .model { font-size: 16px; margin: 6px 0 10px; }
+  .vcard .detail { font-size: 13px; color: var(--muted); }
+
+  @media (max-width: 800px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-height: auto; position: static; padding-top: 10px; }
+    .sidebar .logo { padding-bottom: 12px; }
+    .sidebar nav { display: flex; flex-wrap: wrap; }
+    .sidebar nav a { flex: 1 1 33%; justify-content: center; padding: 10px 8px; font-size: 13px; }
+    .sidebar nav a .txt { display: none; }
+    .main { padding: 16px; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="view-login">
+  <div class="login-card">
+    <div class="logo">🔧</div>
+    <h1>Oficina Mecânica</h1>
+    <p class="sub">Acesse o sistema com sua conta</p>
+    <form id="login-form">
+      <div class="tabs">
+        <div class="tab active" data-tipo="cliente" onclick="selectTab(this)">👤 Cliente</div>
+        <div class="tab" data-tipo="mecanico" onclick="selectTab(this)">🔧 Mecânico</div>
+      </div>
+      <input type="hidden" id="login-tipo" value="cliente">
+      <label>Usuário</label>
+      <input id="login-usuario" placeholder="Digite seu usuário" autocomplete="username" required>
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="Digite sua senha" autocomplete="current-password" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <button type="button" class="btn-register" onclick="openRegister()">➕ Criar conta (cliente ou mecânico)</button>
+    </div>
+</div>
+
+<!-- ==================== MECÂNICO ==================== -->
+<div id="view-mecanico" class="app hidden">
+  <div class="sidebar">
+    <div class="logo">🔧 Oficina Mecânica</div>
+    <nav>
+      <a data-page="dashboard" class="active"><span class="ico">📊</span><span class="txt">Dashboard</span></a>
+      <a data-page="clients"><span class="ico">👥</span><span class="txt">Clientes</span></a>
+      <a data-page="vehicles"><span class="ico">🚗</span><span class="txt">Veículos</span></a>
+      <a data-page="orders"><span class="ico">📋</span><span class="txt">Ordens de Serviço</span></a>
+      <a data-page="services"><span class="ico">⚙️</span><span class="txt">Serviços</span></a>
+      <a onclick="logout()"><span class="ico">🚪</span><span class="txt">Sair</span></a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="who">Bem-vindo, <b id="mec-nome"></b></span>
+      <button class="btn-outline btn-sm" onclick="exportTxt()">📥 Exportar TXT</button>
+      <button class="btn-outline btn-sm" onclick="document.getElementById('file-import').click()">📤 Importar TXT</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <h1>Dashboard</h1>
+      <p class="subtitle">Visão geral da oficina</p>
+      <div class="cards-grid">
+        <div class="stat-card"><div class="label">Ordens Abertas</div><div class="value orange" id="stat-open">0</div></div>
+        <div class="stat-card"><div class="label">Em Andamento</div><div class="value blue" id="stat-progress">0</div></div>
+        <div class="stat-card"><div class="label">Concluídas</div><div class="value green" id="stat-done">0</div></div>
+        <div class="stat-card"><div class="label">Faturamento (mês)</div><div class="value green" id="stat-revenue">R$ 0,00</div></div>
+        <div class="stat-card"><div class="label">Clientes</div><div class="value" id="stat-clients">0</div></div>
+        <div class="stat-card"><div class="label">Veículos</div><div class="value" id="stat-vehicles">0</div></div>
+      </div>
+      <div class="panel">
+        <h2>Ordens recentes</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nº</th><th>Cliente</th><th>Veículo</th><th>Serviço</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody id="recent-orders"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="page" id="page-clients">
+      <h1>Clientes</h1>
+      <p class="subtitle">Cadastro de clientes da oficina (usuário/senha = login do cliente)</p>
+      <div class="toolbar">
+        <input class="search-box" id="search-clients" placeholder="Buscar por nome, usuário ou telefone...">
+        <div class="spacer"></div>
+        <button class="btn" onclick="openClientModal()">+ Novo Cliente</button>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>Usuário</th><th>Telefone</th><th>Email</th><th>Ações</th></tr></thead>
+            <tbody id="clients-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VEÍCULOS -->
+    <div class="page" id="page-vehicles">
+      <h1>Veículos</h1>
+      <p class="subtitle">Veículos vinculados aos clientes</p>
+      <div class="toolbar">
+        <input class="search-box" id="search-vehicles" placeholder="Buscar por placa, modelo ou cliente...">
+        <div class="spacer"></div>
+        <button class="btn" onclick="openVehicleModal()">+ Novo Veículo</button>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Placa</th><th>Marca/Modelo</th><th>Ano</th><th>Cor</th><th>Data</th><th>Ações</th></tr></thead>
+            <tbody id="vehicles-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDENS -->
+    <div class="page" id="page-orders">
+      <h1>Ordens de Serviço</h1>
+      <p class="subtitle">Acompanhe e gerencie os serviços</p>
+      <div class="toolbar">
+        <input class="search-box" id="search-orders" placeholder="Buscar por cliente, placa ou serviço...">
+        <select id="filter-status" style="max-width:200px">
+          <option value="">Todos os status</option>
+          <option value="open">Aberta</option>
+          <option value="in_progress">Em andamento</option>
+          <option value="done">Concluída</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="btn" onclick="openOrderModal()">+ Nova Ordem</button>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nº</th><th>Cliente</th><th>Veículo</th><th>Serviço</th><th>Status</th><th>Total</th><th>Pagamento</th><th>Ações</th></tr></thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVIÇOS -->
+    <div class="page" id="page-services">
+      <h1>Catálogo de Serviços</h1>
+      <p class="subtitle">Tabela de preços padrão da oficina</p>
+      <div class="toolbar">
+        <input class="search-box" id="search-services" placeholder="Buscar serviço...">
+        <div class="spacer"></div>
+        <button class="btn" onclick="openServiceModal()">+ Novo Serviço</button>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Serviço</th><th>Descrição</th><th>Preço</th><th>Ações</th></tr></thead>
+            <tbody id="services-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CLIENTE ==================== -->
+<div id="view-cliente" class="hidden">
+  <header class="cliente">
+    <div>
+      <h1>🔧 Minha Oficina — Meu Veículo</h1>
+      <div class="user">Olá, <span id="cli-nome"></span></div>
+    </div>
+    <button class="btn-outline" onclick="logout()">Sair</button>
+  </header>
+  <div class="cliente-main">
+    <h2>Seus veículos</h2>
+    <div class="cards" id="cli-cards"></div>
+    <div class="panel">
+      <h2>Histórico de serviços do seu veículo</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nº</th><th>Placa</th><th>Serviço</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead>
+          <tbody id="cli-orders"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAIS ==================== -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modal-client')">&times;</button>
+    <h3 id="client-modal-title">Novo Cliente</h3>
+    <input type="hidden" id="client-id">
+    <label>Nome completo *</label>
+    <input id="client-name" placeholder="Ex.: João da Silva">
+    <div class="form-row">
+      <div>
+        <label>Usuário de login *</label>
+        <input id="client-username" placeholder="Ex.: joao">
+      </div>
+      <div>
+        <label>Senha de login *</label>
+        <input id="client-password" placeholder="Senha do cliente">
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Telefone *</label>
+        <input id="client-phone" placeholder="(11) 99999-9999">
+      </div>
+      <div>
+        <label>Email</label>
+        <input id="client-email" placeholder="joao@email.com">
+      </div>
+    </div>
+    <label>Endereço</label>
+    <input id="client-address" placeholder="Rua, número, bairro">
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-client')">Cancelar</button>
+      <button class="btn" onclick="saveClient()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-vehicle">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modal-vehicle')">&times;</button>
+    <h3 id="vehicle-modal-title">Novo Veículo</h3>
+    <input type="hidden" id="vehicle-id">
+    <label>Cliente *</label>
+    <select id="vehicle-client"></select>
+    <div class="form-row">
+      <div>
+        <label>Placa *</label>
+        <input id="vehicle-plate" placeholder="ABC-1234" style="text-transform:uppercase">
+      </div>
+      <div>
+        <label>Ano</label>
+        <input id="vehicle-year" placeholder="2019">
+      </div>
+    </div>
+    <label>Marca / Modelo *</label>
+    <input id="vehicle-model" placeholder="Ex.: VW Gol 1.0">
+    <div class="form-row">
+      <div>
+        <label>Cor</label>
+        <input id="vehicle-color" placeholder="Prata">
+      </div>
+      <div>
+        <label>Data de cadastro</label>
+        <input id="vehicle-date" type="date">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-vehicle')">Cancelar</button>
+      <button class="btn" onclick="saveVehicle()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-order">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modal-order')">&times;</button>
+    <h3 id="order-modal-title">Nova Ordem de Serviço</h3>
+    <input type="hidden" id="order-id">
+    <div class="form-row">
+      <div>
+        <label>Cliente *</label>
+        <select id="order-client" onchange="loadClientVehicles()"></select>
+      </div>
+      <div>
+        <label>Veículo *</label>
+        <select id="order-vehicle"></select>
+      </div>
+    </div>
+    <label>Serviço *</label>
+    <select id="order-service" onchange="updateOrderPrice()"></select>
+    <div class="form-row">
+      <div>
+        <label>Valor (R$) *</label>
+        <input id="order-price" type="number" step="0.01" min="0" placeholder="0,00">
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="order-status">
+          <option value="open">Aberta</option>
+          <option value="in_progress">Em andamento</option>
+          <option value="done">Concluída</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+      </div>
+    </div>
+    <label>Descrição / Observações</label>
+    <textarea id="order-description" rows="3" placeholder="Detalhes do serviço..."></textarea>
+    <label>Forma de pagamento</label>
+    <select id="order-payment">
+      <option value="">Selecione</option>
+      <option value="cash">Dinheiro</option>
+      <option value="card">Cartão</option>
+      <option value="pix">PIX</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-order')">Cancelar</button>
+      <button class="btn" onclick="saveOrder()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-service">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modal-service')">&times;</button>
+    <h3 id="service-modal-title">Novo Serviço</h3>
+    <input type="hidden" id="service-id">
+    <label>Nome do serviço *</label>
+    <input id="service-name" placeholder="Ex.: Troca de óleo">
+    <label>Descrição</label>
+    <textarea id="service-desc" rows="2" placeholder="Descrição do serviço"></textarea>
+    <label>Preço (R$) *</label>
+    <input id="service-price" type="number" step="0.01" min="0" placeholder="0,00">
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-service')">Cancelar</button>
+      <button class="btn" onclick="saveService()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-register">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modal-register')">&times;</button>
+    <h3>Criar Conta</h3>
+    <p class="subtitle" style="margin-bottom:10px">Escolha o perfil e preencha seus dados</p>
+    <div class="tabs" id="reg-tabs">
+      <div class="tab active" data-tipo="cliente" onclick="selectRegTab(this)">👤 Cliente</div>
+      <div class="tab" data-tipo="mecanico" onclick="selectRegTab(this)">🔧 Mecânico</div>
+    </div>
+    <input type="hidden" id="reg-role" value="cliente">
+    <label>Nome completo *</label>
+    <input id="reg-name" placeholder="Seu nome completo">
+    <div class="form-row">
+      <div>
+        <label>Usuário *</label>
+        <input id="reg-username" placeholder="Ex.: joao">
+      </div>
+      <div>
+        <label>Senha *</label>
+        <input id="reg-password" type="password" placeholder="Sua senha">
+      </div>
+    </div>
+    <div id="reg-cliente-fields">
+      <div class="form-row">
+        <div>
+          <label>Telefone *</label>
+          <input id="reg-phone" placeholder="(11) 99999-9999">
+        </div>
+        <div>
+          <label>Email</label>
+          <input id="reg-email" placeholder="voce@email.com">
+        </div>
+      </div>
+      <label>Endereço</label>
+      <input id="reg-address" placeholder="Rua, número, bairro">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-register')">Cancelar</button>
+      <button class="btn" onclick="saveRegister()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-import" accept=".txt,text/plain" class="hidden">
+
+<div id="toast"></div>
+
+<script>
+// ========== ESTADO ==========
+const DATA_KEY = 'oficina_mecanica_data_v1';
+const USERS_KEY = 'oficina_mecanica_users_v1';
+
+const defaultUsers = [
+  { username: 'admin', password: '123456', role: 'mecanico', name: 'Mecânico Chefe' },
+  { username: 'joao', password: 'senha123', role: 'cliente', name: 'João Silva' },
+  { username: 'maria', password: 'senha456', role: 'cliente', name: 'Maria Santos' }
+];
+
+function defaultData() {
+  return {
+    clients: [
+      { id: 1, name: 'João Silva', username: 'joao', password: 'senha123', phone: '(11) 99999-1111', email: 'joao@email.com', address: 'Rua A, 100' },
+      { id: 2, name: 'Maria Santos', username: 'maria', password: 'senha456', phone: '(11) 98888-2222', email: 'maria@email.com', address: 'Rua B, 200' }
+    ],
+    vehicles: [
+      { id: 1, clientId: 1, plate: 'ABC-1234', model: 'VW Gol 1.0', year: '2019', color: 'Prata', date: '2026-08-01' },
+      { id: 2, clientId: 2, plate: 'XYZ-9876', model: 'Fiat Uno 1.0', year: '2018', color: 'Vermelho', date: '2026-08-05' }
+    ],
+    orders: [
+      { id: 1, clientId: 1, vehicleId: 1, serviceId: 1, serviceName: 'Troca de óleo', price: 80, status: 'done', payment: 'pix', date: '2026-08-10' },
+      { id: 2, clientId: 1, vehicleId: 1, serviceId: 3, serviceName: 'Revisão completa', price: 350, status: 'in_progress', payment: '', date: '2026-08-13' }
+    ],
+    services: [
+      { id: 1, name: 'Troca de óleo', desc: 'Troca de óleo e filtro', price: 80.00 },
+      { id: 2, name: 'Alinhamento e balanceamento', desc: 'Alinhamento das quatro rodas', price: 120.00 },
+      { id: 3, name: 'Revisão completa', desc: 'Revisão de 20 pontos', price: 350.00 },
+      { id: 4, name: 'Troca de pastilhas de freio', desc: 'Substituição das pastilhas dianteiras', price: 180.00 },
+      { id: 5, name: 'Troca de bateria', desc: 'Substituição da bateria', price: 90.00 },
+      { id: 6, name: 'Serviço elétrico', desc: 'Diagnóstico e reparo elétrico', price: 150.00 }
+    ]
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (!raw) return defaultData();
+    return Object.assign(defaultData(), JSON.parse(raw));
+  } catch (e) {
+    return defaultData();
+  }
+}
+
+function saveData() {
+  localStorage.setItem(DATA_KEY, JSON.stringify(data));
+}
+
+function loadUsers() {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(defaultUsers));
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed : JSON.parse(JSON.stringify(defaultUsers));
+  } catch (e) {
+    return JSON.parse(JSON.stringify(defaultUsers));
+  }
+}
+
+function saveUsers() {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+let users = loadUsers();
+let data = loadData();
+
+let nextId = { client: 1, vehicle: 1, order: 1, service: 1 };
+function calcNext() {
+  nextId.client = (data.clients.reduce((m, c) => Math.max(m, c.id || 0), 0)) + 1;
+  nextId.vehicle = (data.vehicles.reduce((m, v) => Math.max(m, v.id || 0), 0)) + 1;
+  nextId.order = (data.orders.reduce((m, o) => Math.max(m, o.id || 0), 0)) + 1;
+  nextId.service = (data.services.reduce((m, s) => Math.max(m, s.id || 0), 0)) + 1;
+}
+calcNext();
+
+function genId(type) {
+  return nextId[type]++;
+}
+
+// ========== UTILIDADES ==========
+function fmtCurrency(v) {
+  return 'R$ ' + parseFloat(v || 0).toFixed(2).replace('.', ',');
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date)) return d;
+  return date.toLocaleDateString('pt-BR');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function clientName(id) {
+  const c = data.clients.find(x => x.id === id);
+  return c ? c.name : '—';
+}
+
+function vehicleLabel(id) {
+  const v = data.vehicles.find(x => x.id === id);
+  return v ? (v.model + ' (' + v.plate + ')') : '—';
+}
+
+const STATUS = {
+  open: { label: 'Aberta', cls: 'open' },
+  in_progress: { label: 'Em andamento', cls: 'in_progress' },
+  done: { label: 'Concluída', cls: 'done' },
+  cancelled: { label: 'Cancelada', cls: 'cancelled' }
+};
+
+const PAYMENT = {
+  cash: { label: 'Dinheiro', cls: 'cash' },
+  card: { label: 'Cartão', cls: 'card' },
+  pix: { label: 'PIX', cls: 'pix' }
+};
+
+// ========== LOGIN / LOGOUT ==========
+function selectTab(el) {
+  document.querySelectorAll('#view-login .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('login-tipo').value = el.dataset.tipo;
+}
+
+document.getElementById('login-form').addEventListener('submit', doLogin);
+
+function doLogin(e) {
+  e.preventDefault();
+  const tipo = document.getElementById('login-tipo').value;
+  const u = document.getElementById('login-usuario').value.trim().toLowerCase();
+  const p = document.getElementById('login-senha').value;
+  const user = users.find(x => x.username.toLowerCase() === u);
+  if (!user) { toast('Usuário não encontrado'); return; }
+  if (user.password !== p) { toast('Senha incorreta'); return; }
+  if (user.role !== tipo) { toast('Perfil de acesso incorreto para este usuário'); return; }
+  sessionStorage.setItem('oficina_logado', JSON.stringify({ username: user.username, role: user.role, name: user.name }));
+  enterApp();
+}
+
+// ========== CADASTRO DE CONTA ==========
+function openRegister() {
+  document.getElementById('reg-role').value = 'cliente';
+  document.querySelectorAll('#reg-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tipo === 'cliente'));
+  document.getElementById('reg-cliente-fields').classList.remove('hidden');
+  ['reg-name', 'reg-username', 'reg-password', 'reg-phone', 'reg-email', 'reg-address'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  openModal('modal-register');
+}
+
+function selectRegTab(el) {
+  document.querySelectorAll('#reg-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('reg-role').value = el.dataset.tipo;
+  document.getElementById('reg-cliente-fields').classList.toggle('hidden', el.dataset.tipo !== 'cliente');
+}
+
+function saveRegister() {
+  const role = document.getElementById('reg-role').value;
+  const name = document.getElementById('reg-name').value.trim();
+  const username = document.getElementById('reg-username').value.trim().toLowerCase();
+  const password = document.getElementById('reg-password').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const address = document.getElementById('reg-address').value.trim();
+
+  if (!name || !username || !password) { toast('Preencha nome, usuário e senha'); return; }
+  if (role === 'cliente' && !phone) { toast('Para cliente, preencha também o telefone'); return; }
+  if (users.some(u => u.username.toLowerCase() === username)) { toast('Já existe uma conta com esse usuário'); return; }
+
+  if (role === 'cliente') {
+    const c = { id: genId('client'), name, username, password, phone, email, address };
+    data.clients.push(c);
+    syncUsersFromClients();
+    saveData();
+    saveUsers();
+    toast('Conta de cliente criada! Faça login.');
+  } else {
+    users.push({ username, password, role: 'mecanico', name });
+    saveUsers();
+    toast('Conta de mecânico criada! Faça login.');
+  }
+  closeModal('modal-register');
+}
+
+function logout() {
+  sessionStorage.removeItem('oficina_logado');
+  document.getElementById('view-mecanico').classList.add('hidden');
+  document.getElementById('view-cliente').classList.add('hidden');
+  document.getElementById('view-login').classList.remove('hidden');
+  document.getElementById('login-usuario').value = '';
+  document.getElementById('login-senha').value = '';
+}
+
+function enterApp() {
+  const logged = JSON.parse(sessionStorage.getItem('oficina_logado'));
+  if (!logged) { logout(); return; }
+  document.getElementById('view-login').classList.add('hidden');
+  if (logged.role === 'mecanico') {
+    document.getElementById('mec-nome').textContent = logged.name;
+    document.getElementById('view-mecanico').classList.remove('hidden');
+    document.getElementById('view-cliente').classList.add('hidden');
+    refreshAll();
+  } else {
+    document.getElementById('cli-nome').textContent = logged.name;
+    document.getElementById('view-cliente').classList.remove('hidden');
+    document.getElementById('view-mecanico').classList.add('hidden');
+    renderClientView();
+  }
+}
+
+// ========== NAVEGAÇÃO (mecânico) ==========
+document.querySelectorAll('#view-mecanico .sidebar nav a[data-page]').forEach(a => {
+  a.addEventListener('click', () => {
+    document.querySelectorAll('#view-mecanico .sidebar nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    const page = a.dataset.page;
+    document.querySelectorAll('#view-mecanico .page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    refreshAll();
+  });
+});
+
+// ========== MODAIS ==========
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+});
+
+// ========== RENDER ==========
+function refreshAll() {
+  renderDashboard();
+  renderClients();
+  renderVehicles();
+  renderOrders();
+  renderServices();
+}
+
+function renderDashboard() {
+  const open = data.orders.filter(o => o.status === 'open').length;
+  const prog = data.orders.filter(o => o.status === 'in_progress').length;
+  const done = data.orders.filter(o => o.status === 'done').length;
+  const now = new Date();
+  const monthRevenue = data.orders
+    .filter(o => o.status === 'done' && o.date && new Date(o.date).getMonth() === now.getMonth() && new Date(o.date).getFullYear() === now.getFullYear())
+    .reduce((s, o) => s + parseFloat(o.price || 0), 0);
+
+  document.getElementById('stat-open').textContent = open;
+  document.getElementById('stat-progress').textContent = prog;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-revenue').textContent = fmtCurrency(monthRevenue);
+  document.getElementById('stat-clients').textContent = data.clients.length;
+  document.getElementById('stat-vehicles').textContent = data.vehicles.length;
+
+  const recent = [...data.orders].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 8);
+  document.getElementById('recent-orders').innerHTML = recent.length
+    ? recent.map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${escapeHtml(clientName(o.clientId))}</td>
+          <td>${escapeHtml(vehicleLabel(o.vehicleId))}</td>
+          <td>${escapeHtml(o.serviceName)}</td>
+          <td><span class="badge ${STATUS[o.status].cls}">${STATUS[o.status].label}</span></td>
+          <td>${fmtCurrency(o.price)}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="6" class="empty">Nenhuma ordem registrada</td></tr>';
+}
+
+function renderClients() {
+  const term = (document.getElementById('search-clients').value || '').toLowerCase();
+  const filtered = data.clients.filter(c =>
+    c.name.toLowerCase().includes(term) ||
+    (c.username || '').toLowerCase().includes(term) ||
+    (c.phone || '').toLowerCase().includes(term));
+  document.getElementById('clients-tbody').innerHTML = filtered.length
+    ? filtered.map(c => `
+        <tr>
+          <td>${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.username || '—')}</td>
+          <td>${escapeHtml(c.phone)}</td>
+          <td>${escapeHtml(c.email || '—')}</td>
+          <td>
+            <button class="btn-outline btn-sm" onclick="editClient(${c.id})">Editar</button>
+            <button class="btn-danger btn-sm" onclick="deleteClient(${c.id})">Excluir</button>
+          </td>
+        </tr>`).join('')
+    : '<tr><td colspan="5" class="empty">Nenhum cliente encontrado</td></tr>';
+}
+
+function renderVehicles() {
+  const term = (document.getElementById('search-vehicles').value || '').toLowerCase();
+  const filtered = data.vehicles.filter(v =>
+    v.plate.toLowerCase().includes(term) ||
+    v.model.toLowerCase().includes(term) ||
+    clientName(v.clientId).toLowerCase().includes(term));
+  document.getElementById('vehicles-tbody').innerHTML = filtered.length
+    ? filtered.map(v => `
+        <tr>
+          <td>${escapeHtml(clientName(v.clientId))}</td>
+          <td>${escapeHtml(v.plate)}</td>
+          <td>${escapeHtml(v.model)}</td>
+          <td>${escapeHtml(v.year || '—')}</td>
+          <td>${escapeHtml(v.color || '—')}</td>
+          <td>${fmtDate(v.date)}</td>
+          <td>
+            <button class="btn-outline btn-sm" onclick="editVehicle(${v.id})">Editar</button>
+            <button class="btn-danger btn-sm" onclick="deleteVehicle(${v.id})">Excluir</button>
+          </td>
+        </tr>`).join('')
+    : '<tr><td colspan="7" class="empty">Nenhum veículo encontrado</td></tr>';
+}
+
+function renderOrders() {
+  const term = (document.getElementById('search-orders').value || '').toLowerCase();
+  const status = document.getElementById('filter-status').value;
+  const filtered = data.orders.filter(o =>
+    (!status || o.status === status) &&
+    (clientName(o.clientId).toLowerCase().includes(term) ||
+     vehicleLabel(o.vehicleId).toLowerCase().includes(term) ||
+     (o.serviceName || '').toLowerCase().includes(term)));
+
+  const sorted = [...filtered].sort((a, b) => (b.id || 0) - (a.id || 0));
+  document.getElementById('orders-tbody').innerHTML = sorted.length
+    ? sorted.map(o => {
+        const st = STATUS[o.status] || STATUS.open;
+        const pay = o.payment ? (PAYMENT[o.payment] || { label: o.payment, cls: 'open' }) : null;
+        return `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${escapeHtml(clientName(o.clientId))}</td>
+          <td>${escapeHtml(vehicleLabel(o.vehicleId))}</td>
+          <td>${escapeHtml(o.serviceName)}</td>
+          <td><span class="badge ${st.cls}">${st.label}</span></td>
+          <td>${fmtCurrency(o.price)}</td>
+          <td>${pay ? `<span class="badge ${pay.cls}">${pay.label}</span>` : '—'}</td>
+          <td>
+            <button class="btn-outline btn-sm" onclick="editOrder(${o.id})">Editar</button>
+            <button class="btn-danger btn-sm" onclick="deleteOrder(${o.id})">Excluir</button>
+          </td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="8" class="empty">Nenhuma ordem encontrada</td></tr>';
+}
+
+function renderServices() {
+  const term = (document.getElementById('search-services').value || '').toLowerCase();
+  const filtered = data.services.filter(s =>
+    s.name.toLowerCase().includes(term) || (s.desc || '').toLowerCase().includes(term));
+  document.getElementById('services-tbody').innerHTML = filtered.length
+    ? filtered.map(s => `
+        <tr>
+          <td>${escapeHtml(s.name)}</td>
+          <td>${escapeHtml(s.desc || '—')}</td>
+          <td>${fmtCurrency(s.price)}</td>
+          <td>
+            <button class="btn-outline btn-sm" onclick="editService(${s.id})">Editar</button>
+            <button class="btn-danger btn-sm" onclick="deleteService(${s.id})">Excluir</button>
+          </td>
+        </tr>`).join('')
+    : '<tr><td colspan="4" class="empty">Nenhum serviço encontrado</td></tr>';
+}
+
+// busca em tempo real
+['search-clients', 'search-vehicles', 'search-orders', 'search-services'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    if (id === 'search-clients') renderClients();
+    if (id === 'search-vehicles') renderVehicles();
+    if (id === 'search-orders') renderOrders();
+    if (id === 'search-services') renderServices();
+  });
+});
+document.getElementById('filter-status').addEventListener('change', renderOrders);
+
+// ========== CLIENTES CRUD ==========
+function openClientModal(client) {
+  document.getElementById('client-modal-title').textContent = client ? 'Editar Cliente' : 'Novo Cliente';
+  document.getElementById('client-id').value = client ? client.id : '';
+  document.getElementById('client-name').value = client ? client.name : '';
+  document.getElementById('client-username').value = client ? (client.username || '') : '';
+  document.getElementById('client-password').value = client ? (client.password || '') : '';
+  document.getElementById('client-phone').value = client ? client.phone : '';
+  document.getElementById('client-email').value = client ? client.email : '';
+  document.getElementById('client-address').value = client ? client.address : '';
+  openModal('modal-client');
+}
+
+function editClient(id) {
+  const c = data.clients.find(x => x.id === id);
+  if (c) openClientModal(c);
+}
+
+function saveClient() {
+  const name = document.getElementById('client-name').value.trim();
+  const username = document.getElementById('client-username').value.trim().toLowerCase();
+  const password = document.getElementById('client-password').value.trim();
+  const phone = document.getElementById('client-phone').value.trim();
+  if (!name || !username || !password || !phone) { toast('Preencha nome, usuário, senha e telefone'); return; }
+  const id = document.getElementById('client-id').value;
+  const obj = {
+    name, username, password, phone,
+    email: document.getElementById('client-email').value.trim(),
+    address: document.getElementById('client-address').value.trim()
+  };
+  const duplicate = data.clients.find(c => c.username === username && (c.id !== parseInt(id)));
+  if (duplicate) { toast('Já existe cliente com esse usuário de login'); return; }
+  if (id) {
+    const c = data.clients.find(x => x.id === parseInt(id));
+    Object.assign(c, obj);
+    toast('Cliente atualizado');
+  } else {
+    data.clients.push(Object.assign({ id: genId('client') }, obj));
+    toast('Cliente cadastrado');
+  }
+  syncUsersFromClients();
+  saveData();
+  saveUsers();
+  closeModal('modal-client');
+  refreshAll();
+}
+
+function deleteClient(id) {
+  if (!confirm('Excluir este cliente? Veículos e ordens vinculados também serão removidos.')) return;
+  data.clients = data.clients.filter(c => c.id !== id);
+  data.vehicles = data.vehicles.filter(v => v.clientId !== id);
+  data.orders = data.orders.filter(o => o.clientId !== id);
+  syncUsersFromClients();
+  saveData();
+  saveUsers();
+  refreshAll();
+  toast('Cliente excluído');
+}
+
+function syncUsersFromClients() {
+  users = users.filter(u => u.role !== 'cliente');
+  data.clients.forEach(c => {
+    users.push({
+      username: c.username,
+      password: c.password || '',
+      role: 'cliente',
+      name: c.name
+    });
+  });
+}
+
+// ========== VEÍCULOS CRUD ==========
+function fillClientSelect() {
+  const sel = document.getElementById('vehicle-client');
+  sel.innerHTML = data.clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('') || '<option value="">Nenhum cliente</option>';
+}
+
+function openVehicleModal(vehicle) {
+  fillClientSelect();
+  document.getElementById('vehicle-modal-title').textContent = vehicle ? 'Editar Veículo' : 'Novo Veículo';
+  document.getElementById('vehicle-id').value = vehicle ? vehicle.id : '';
+  document.getElementById('vehicle-client').value = vehicle ? vehicle.clientId : (data.clients[0] ? data.clients[0].id : '');
+  document.getElementById('vehicle-plate').value = vehicle ? vehicle.plate : '';
+  document.getElementById('vehicle-year').value = vehicle ? vehicle.year : '';
+  document.getElementById('vehicle-model').value = vehicle ? vehicle.model : '';
+  document.getElementById('vehicle-color').value = vehicle ? vehicle.color : '';
+  document.getElementById('vehicle-date').value = vehicle ? (vehicle.date || '') : new Date().toISOString().slice(0, 10);
+  openModal('modal-vehicle');
+}
+
+function editVehicle(id) {
+  const v = data.vehicles.find(x => x.id === id);
+  if (v) openVehicleModal(v);
+}
+
+function saveVehicle() {
+  const clientId = parseInt(document.getElementById('vehicle-client').value);
+  const plate = document.getElementById('vehicle-plate').value.trim().toUpperCase();
+  const model = document.getElementById('vehicle-model').value.trim();
+  if (!clientId || !plate || !model) { toast('Preencha cliente, placa e modelo'); return; }
+  const id = document.getElementById('vehicle-id').value;
+  const obj = {
+    clientId, plate, model,
+    year: document.getElementById('vehicle-year').value.trim(),
+    color: document.getElementById('vehicle-color').value.trim(),
+    date: document.getElementById('vehicle-date').value || new Date().toISOString().slice(0, 10)
+  };
+  if (id) {
+    const v = data.vehicles.find(x => x.id === parseInt(id));
+    Object.assign(v, obj);
+    toast('Veículo atualizado');
+  } else {
+    data.vehicles.push(Object.assign({ id: genId('vehicle') }, obj));
+    toast('Veículo cadastrado');
+  }
+  saveData();
+  closeModal('modal-vehicle');
+  refreshAll();
+}
+
+function deleteVehicle(id) {
+  if (!confirm('Excluir este veículo?')) return;
+  data.vehicles = data.vehicles.filter(v => v.id !== id);
+  data.orders = data.orders.filter(o => o.vehicleId !== id);
+  saveData();
+  refreshAll();
+  toast('Veículo excluído');
+}
+
+// ========== ORDENS CRUD ==========
+function fillOrderSelects() {
+  const csel = document.getElementById('order-client');
+  csel.innerHTML = data.clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('') || '<option value="">Nenhum cliente</option>';
+  const ssel = document.getElementById('order-service');
+  ssel.innerHTML = data.services.map(s => `<option value="${s.id}">${escapeHtml(s.name)} — ${fmtCurrency(s.price)}</option>`).join('') || '<option value="">Nenhum serviço</option>';
+}
+
+function loadClientVehicles() {
+  const cid = parseInt(document.getElementById('order-client').value);
+  const vs = data.vehicles.filter(v => v.clientId === cid);
+  const vsel = document.getElementById('order-vehicle');
+  vsel.innerHTML = vs.length
+    ? vs.map(v => `<option value="${v.id}">${escapeHtml(v.model)} (${escapeHtml(v.plate)})</option>`).join('')
+    : '<option value="">Nenhum veículo</option>';
+}
+
+function updateOrderPrice() {
+  const sid = parseInt(document.getElementById('order-service').value);
+  const s = data.services.find(x => x.id === sid);
+  if (s) document.getElementById('order-price').value = s.price;
+}
+
+function openOrderModal(order) {
+  fillOrderSelects();
+  document.getElementById('order-modal-title').textContent = order ? 'Editar Ordem' : 'Nova Ordem de Serviço';
+  document.getElementById('order-id').value = order ? order.id : '';
+  document.getElementById('order-client').value = order ? order.clientId : (data.clients[0] ? data.clients[0].id : '');
+  loadClientVehicles();
+  if (order) {
+    document.getElementById('order-vehicle').value = order.vehicleId;
+    document.getElementById('order-service').value = order.serviceId;
+    document.getElementById('order-price').value = order.price;
+    document.getElementById('order-status').value = order.status;
+    document.getElementById('order-description').value = order.description || '';
+    document.getElementById('order-payment').value = order.payment || '';
+  } else {
+    document.getElementById('order-status').value = 'open';
+    document.getElementById('order-description').value = '';
+    document.getElementById('order-payment').value = '';
+    updateOrderPrice();
+  }
+  openModal('modal-order');
+}
+
+function editOrder(id) {
+  const o = data.orders.find(x => x.id === id);
+  if (o) openOrderModal(o);
+}
+
+function saveOrder() {
+  const clientId = parseInt(document.getElementById('order-client').value);
+  const vehicleId = parseInt(document.getElementById('order-vehicle').value);
+  const serviceId = parseInt(document.getElementById('order-service').value);
+  const price = parseFloat(document.getElementById('order-price').value);
+  if (!clientId || !vehicleId || !serviceId || isNaN(price)) {
+    toast('Preencha cliente, veículo, serviço e valor');
+    return;
+  }
+  const svc = data.services.find(x => x.id === serviceId);
+  const id = document.getElementById('order-id').value;
+  const obj = {
+    clientId, vehicleId, serviceId,
+    serviceName: svc ? svc.name : 'Serviço',
+    price,
+    status: document.getElementById('order-status').value,
+    description: document.getElementById('order-description').value.trim(),
+    payment: document.getElementById('order-payment').value
+  };
+  if (id) {
+    const o = data.orders.find(x => x.id === parseInt(id));
+    Object.assign(o, obj);
+    toast('Ordem atualizada');
+  } else {
+    obj.date = new Date().toISOString();
+    data.orders.push(Object.assign({ id: genId('order') }, obj));
+    toast('Ordem criada');
+  }
+  saveData();
+  closeModal('modal-order');
+  refreshAll();
+}
+
+function deleteOrder(id) {
+  if (!confirm('Excluir esta ordem de serviço?')) return;
+  data.orders = data.orders.filter(o => o.id !== id);
+  saveData();
+  refreshAll();
+  toast('Ordem excluída');
+}
+
+// ========== SERVIÇOS CRUD ==========
+function openServiceModal(service) {
+  document.getElementById('service-modal-title').textContent = service ? 'Editar Serviço' : 'Novo Serviço';
+  document.getElementById('service-id').value = service ? service.id : '';
+  document.getElementById('service-name').value = service ? service.name : '';
+  document.getElementById('service-desc').value = service ? service.desc : '';
+  document.getElementById('service-price').value = service ? service.price : '';
+  openModal('modal-service');
+}
+
+function editService(id) {
+  const s = data.services.find(x => x.id === id);
+  if (s) openServiceModal(s);
+}
+
+function saveService() {
+  const name = document.getElementById('service-name').value.trim();
+  const price = parseFloat(document.getElementById('service-price').value);
+  if (!name || isNaN(price)) { toast('Preencha nome e preço'); return; }
+  const id = document.getElementById('service-id').value;
+  const obj = {
+    name, price,
+    desc: document.getElementById('service-desc').value.trim()
+  };
+  if (id) {
+    const s = data.services.find(x => x.id === parseInt(id));
+    Object.assign(s, obj);
+    toast('Serviço atualizado');
+  } else {
+    data.services.push(Object.assign({ id: genId('service') }, obj));
+    toast('Serviço cadastrado');
+  }
+  saveData();
+  closeModal('modal-service');
+  refreshAll();
+}
+
+function deleteService(id) {
+  if (!confirm('Excluir este serviço?')) return;
+  data.services = data.services.filter(s => s.id !== id);
+  saveData();
+  refreshAll();
+  toast('Serviço excluído');
+}
+
+// ========== VISÃO DO CLIENTE ==========
+function renderClientView() {
+  const logged = JSON.parse(sessionStorage.getItem('oficina_logado'));
+  const client = data.clients.find(c => (c.username || '').toLowerCase() === logged.username);
+  const myVehicles = client ? data.vehicles.filter(v => v.clientId === client.id) : [];
+  const vids = myVehicles.map(v => v.id);
+  const myOrders = data.orders.filter(o => vids.includes(o.vehicleId));
+
+  const cards = document.getElementById('cli-cards');
+  cards.innerHTML = myVehicles.length
+    ? myVehicles.map(v => `
+        <div class="vcard">
+          <div class="plate">${escapeHtml(v.plate)}</div>
+          <div class="model">${escapeHtml(v.model)}</div>
+          <div class="detail">Ano: ${escapeHtml(v.year || '—')} &nbsp;·&nbsp; Cor: ${escapeHtml(v.color || '—')} &nbsp;·&nbsp; Cadastro: ${fmtDate(v.date)}</div>
+        </div>`).join('')
+    : '<div class="panel"><div class="empty">Nenhum veículo vinculado à sua conta. Fale com a oficina.</div></div>';
+
+  const sorted = [...myOrders].sort((a, b) => (b.id || 0) - (a.id || 0));
+  document.getElementById('cli-orders').innerHTML = sorted.length
+    ? sorted.map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${escapeHtml(vehicleLabel(o.vehicleId))}</td>
+          <td>${escapeHtml(o.serviceName)}</td>
+          <td>${fmtCurrency(o.price)}</td>
+          <td><span class="badge ${STATUS[o.status].cls}">${STATUS[o.status].label}</span></td>
+          <td>${fmtDate(o.date)}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="6" class="empty">Nenhum serviço registrado para seus veículos.</td></tr>';
+}
+
+// ========== TXT (exportar / importar) ==========
+function buildTxt() {
+  const L = [];
+  L.push('============================================');
+  L.push('       OFICINA MECÂNICA - DADOS');
+  L.push('============================================');
+  L.push('');
+  L.push('=== USUARIOS ===');
+  users.forEach(u => L.push([u.role, u.username, u.password, u.name].join('|')));
+  L.push('');
+  L.push('=== CLIENTES ===');
+  data.clients.forEach(c => L.push([c.id, c.name, c.phone || '', c.email || '', c.address || '', c.username || '', c.password || ''].join('|')));
+  L.push('');
+  L.push('=== VEICULOS ===');
+  data.vehicles.forEach(v => L.push([v.id, v.clientId, v.plate, v.model, v.year || '', v.color || '', v.date || ''].join('|')));
+  L.push('');
+  L.push('=== ORDENS ===');
+  data.orders.forEach(o => L.push([o.id, o.clientId, o.vehicleId, o.serviceId, o.serviceName, o.price, o.status, o.payment || '', o.description || '', o.date || ''].join('|')));
+  L.push('');
+  L.push('=== SERVICOS ===');
+  data.services.forEach(s => L.push([s.id, s.name, s.desc || '', s.price].join('|')));
+  return L.join('\n');
+}
+
+function exportTxt() {
+  const blob = new Blob([buildTxt()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dados_oficina.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  toast('Arquivo TXT exportado');
+}
+
+document.getElementById('file-import').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      importTxt(reader.result);
+      toast('Dados importados com sucesso');
+    } catch (err) {
+      toast('Erro ao importar: arquivo inválido');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+  this.value = '';
+});
+
+function importTxt(text) {
+  const lines = text.split(/\r?\n/);
+  let section = null;
+  const newUsers = [];
+  const newData = { clients: [], vehicles: [], orders: [], services: [] };
+
+  lines.forEach(line => {
+    const l = line.trim();
+    if (!l) return;
+    if (/^===/.test(l)) {
+      section = l.replace(/=/g, '').trim().toUpperCase();
+      return;
+    }
+    const p = l.split('|').map(x => x.trim());
+    switch (section) {
+      case 'USUARIOS':
+        if (p.length >= 4) newUsers.push({ role: p[0], username: p[1], password: p[2], name: p[3] });
+        break;
+      case 'CLIENTES':
+        if (p.length >= 7) newData.clients.push({ id: parseInt(p[0]), name: p[1], phone: p[2], email: p[3], address: p[4], username: p[5], password: p[6] });
+        break;
+      case 'VEICULOS':
+        if (p.length >= 6) newData.vehicles.push({ id: parseInt(p[0]), clientId: parseInt(p[1]), plate: p[2], model: p[3], year: p[4], color: p[5], date: p[6] || '' });
+        break;
+      case 'ORDENS':
+        if (p.length >= 7) newData.orders.push({ id: parseInt(p[0]), clientId: parseInt(p[1]), vehicleId: parseInt(p[2]), serviceId: parseInt(p[3]), serviceName: p[4], price: parseFloat(p[5]), status: p[6], payment: p[7], description: p[8], date: p[9] });
+        break;
+      case 'SERVICOS':
+        if (p.length >= 4) newData.services.push({ id: parseInt(p[0]), name: p[1], desc: p[2], price: parseFloat(p[3]) });
+        break;
+    }
+  });
+
+  if (newUsers.length) users = newUsers;
+  if (newData.clients.length || newData.vehicles.length || newData.orders.length || newData.services.length) {
+    data = Object.assign(defaultData(), newData);
+  }
+  calcNext();
+  saveUsers();
+  saveData();
+  const logged = JSON.parse(sessionStorage.getItem('oficina_logado'));
+  if (logged && logged.role === 'mecanico') refreshAll();
+}
+
+// ========== INICIALIZAÇÃO ==========
+const logged = JSON.parse(sessionStorage.getItem('oficina_logado'));
+if (logged) {
+  enterApp();
+} else {
+  document.getElementById('view-login').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
